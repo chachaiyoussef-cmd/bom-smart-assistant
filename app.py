@@ -14,8 +14,13 @@ SHEET_NAME = "Feuil1"
 
 
 def norm(x):
-    if pd.isna(x):
+    if x is None:
         return ""
+    try:
+        if pd.isna(x):
+            return ""
+    except Exception:
+        pass
     s = str(x).strip().lower()
     s = unicodedata.normalize("NFKD", s)
     s = "".join(c for c in s if not unicodedata.combining(c))
@@ -110,6 +115,12 @@ def find_tag(question, tags):
     return None
 
 
+def safe_row_text(data):
+    # Correctif V7 : conversion robuste de chaque valeur en texte
+    # pour éviter l'erreur de chatbot sur Streamlit Cloud.
+    return data.apply(lambda r: norm(" ".join([str(v) for v in r.to_list()])), axis=1)
+
+
 def answer_question(question, df, mapping, tags):
     data = df.copy()
     tag = find_tag(question, tags)
@@ -119,24 +130,30 @@ def answer_question(question, df, mapping, tags):
         data = data[data[tag_col].fillna("").astype(str) == tag]
 
     q = norm(question)
-    row_text = data.astype(str).apply(lambda r: norm(" ".join(r.values)), axis=1)
+    row_text = safe_row_text(data)
 
     intro = "Résultat de la recherche dans le tableau BOM"
+
     if "critique" in q or "elevee" in q or "élevée" in q:
         data = data[data["Criticité proposée"] == "Élevée"]
         intro = "Voici les pièces à criticité élevée"
+
     elif "stock" in q:
         data = data[data["Niveau de stock proposé"].isin(["Stock important", "Stock moyen"])]
         intro = "Voici les pièces nécessitant un suivi stock prioritaire"
+
     elif "verifier" in q or "vérifier" in q:
         data = data[data["Criticité proposée"] == "À vérifier"]
         intro = "Voici les pièces à vérifier"
+
     elif "roulement" in q or "bearing" in q:
         data = data[row_text.apply(lambda x: "roulement" in x or "bearing" in x)]
         intro = "Voici les lignes liées aux roulements"
+
     elif "joint" in q or "gasket" in q or "etancheite" in q or "étanchéité" in q:
         data = data[row_text.apply(lambda x: any(k in x for k in ["joint", "gasket", "etancheite", "oring", "o ring"]))]
         intro = "Voici les lignes liées aux joints et éléments d’étanchéité"
+
     elif "resume" in q or "résumé" in q:
         intro = "Résumé maintenance"
 
@@ -185,7 +202,7 @@ if tag_value != "Tous" and tag_col:
     filtered = filtered[filtered[tag_col].fillna("").astype(str) == tag_value]
 if keyword:
     kw = keyword.lower()
-    filtered = filtered[filtered.astype(str).apply(lambda r: kw in " ".join(r.values).lower(), axis=1)]
+    filtered = filtered[filtered.astype(str).apply(lambda r: kw in " ".join([str(v) for v in r.to_list()]).lower(), axis=1)]
 if criticity != "Toutes":
     filtered = filtered[filtered["Criticité proposée"] == criticity]
 

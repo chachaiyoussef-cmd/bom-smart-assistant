@@ -1,3 +1,1 @@
-BOM Smart Assistant V6
-
-Modifications : suppression de Colonnes détectées, tableau simplifié, exemples de questions ajoutés.
+BOM Smart Assistant V7 - Correctif chatbot + affichage simplifié.
