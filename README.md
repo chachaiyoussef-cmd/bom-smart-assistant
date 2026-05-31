@@ -1,1 +1,1 @@
-BOM Smart Assistant V8 - Réponses enrichies, justifications variées, logique maintenance améliorée.
+BOM Smart Assistant V9 professionnel : dashboard, résumé automatique, familles maintenance, recommandations, chatbot enrichi.
