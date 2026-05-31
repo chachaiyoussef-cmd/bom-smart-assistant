@@ -1,1 +1,1 @@
-BOM Smart Assistant V7 - Correctif chatbot + affichage simplifié.
+BOM Smart Assistant V8 - Réponses enrichies, justifications variées, logique maintenance améliorée.
